@@ -1,4 +1,6 @@
 <img width="512" height="512" alt="1815" src="https://github.com/user-attachments/assets/b8b86d07-e01f-480c-a5ef-761297285a4a" />
+
+
 # TumorVision — Brain Tumor Scanner & MRI Imagery Analysis
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://derrickmirindi.github.io/AI-Brain-Tumor/)
@@ -9,7 +11,7 @@ Real-time brain tumor detection using YOLO26s, running entirely in your browser 
 
 ## 🚀 Live Demo
 
-**Try it now:** [https://derrickmirindi.github.io/AI-Brain-Tumor/](https://derrickmirindi.github.io/AI-Brain-Tumor/)
+**Try it now:** [https://github.com/Derrickmirindi/TumorVision.git]
 
 ## ✨ Features
 
