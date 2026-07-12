@@ -11,7 +11,7 @@ Real-time brain tumor detection using YOLO26s, running entirely in your browser 
 
 ## 🚀 Live Demo
 
-**Try it now:** [https://github.com/Derrickmirindi/TumorVision.git]
+**Try it now:** [[https://github.com/Derrickmirindi/TumorVision.git](https://derrickmirindi.github.io/TumorVision/)]
 
 ## ✨ Features
 
