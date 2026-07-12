@@ -1,3 +1,4 @@
+<img width="512" height="512" alt="1815" src="https://github.com/user-attachments/assets/b8b86d07-e01f-480c-a5ef-761297285a4a" />
 # NeuroScan — Brain Tumor Detection
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://derrickmirindi.github.io/AI-Brain-Tumor/)
