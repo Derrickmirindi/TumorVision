@@ -124,7 +124,7 @@ footer{border-top:2px solid var(--black);padding:calc(var(--bl) * 4) 0;margin-to
 const $=id=>document.getElementById(id);
 const canvas=$('canvas'),ctx=canvas.getContext('2d'),video=$('video');
 let session=null,mode='image',stream=null,running=false,conf=0.25,iou=0.45,rafId=null,fpsT=performance.now(),frames=0;
-const MODEL={path:'./best.pt',inputSize:640,classes:['negative','positive'],colors:['#4A5D51','#00A344']};
+const MODEL={path:'./best.onnx',inputSize:640,classes:['negative','positive'],colors:['#4A5D51','#00A344']};
 const CACHE_NAME='tumorvision-model-v3',CACHE_KEY='best-pt';
 const LABEL_FONT='"Leelawadee UI","Segoe UI",Arial,sans-serif';
 function setStatus(txt,cls){$('statusText').textContent=txt;$('dot').className='status-dot '+(cls||'');}
