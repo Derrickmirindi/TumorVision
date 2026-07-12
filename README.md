@@ -85,7 +85,7 @@ Contributions welcome! Open an issue or submit a pull request.
 
 ## 📧 Contact
 
-Developed by [Derrick Mirindi](https://github.com/Derrickmirindi)
+Developed by [Derrick Mirindi](https://github.com/Derrickmirindi), David Sinkhonde, and Frederic Mirindi
 
 ---
 
