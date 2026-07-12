@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>TumorVision · Brain Tumor Scanner</title>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js" onerror="var s=document.getElementById('statusText');if(s){s.textContent='Error: failed to load ONNX Runtime (CDN blocked)';}var d=document.getElementById('dot');if(d){d.className='status-dot err';}"></script>
 <style>
 :root{--cols:12;--gutter:24px;--margin:48px;--bl:8px;--lh:24px;--maxw:1200px;--red:#00A344;--green2:#008A3C;--green3:#00C853;--black:#06140C;--white:#FFF;--gray:#4A5D51;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
