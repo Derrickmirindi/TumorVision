@@ -4,14 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>TumorVision · Brain Tumor Scanner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
 <style>
-:root{--cols:12;--gutter:24px;--margin:48px;--bl:8px;--lh:24px;--maxw:1200px;--red:#128A4B;--green2:#16A34A;--black:#0F1B14;--white:#FFF;--gray:#5B6B60;}
+:root{--cols:12;--gutter:24px;--margin:48px;--bl:8px;--lh:24px;--maxw:1200px;--red:#00A344;--green2:#008A3C;--green3:#00C853;--black:#06140C;--white:#FFF;--gray:#4A5D51;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{min-height:100vh;font-family:'Space Grotesk','Inter','Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:var(--lh);color:var(--black);background:var(--white);text-align:left;-webkit-font-smoothing:antialiased;}
+body{min-height:100vh;font-family:'Leelawadee UI','Leelawadee','Segoe UI',Tahoma,Arial,sans-serif;font-size:16px;line-height:var(--lh);color:var(--black);background:var(--white);text-align:left;-webkit-font-smoothing:antialiased;}
 .container{max-width:var(--maxw);margin:0 auto;padding:0 var(--margin);display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:var(--gutter);}
 .grid-full{grid-column:1 / -1;}
 .grid-8{grid-column:span 8;}
@@ -23,7 +20,7 @@ body{min-height:100vh;font-family:'Space Grotesk','Inter','Helvetica Neue',Arial
 .bl3{margin-bottom:calc(var(--bl) * 3);}
 .bl4{margin-bottom:calc(var(--bl) * 4);}
 .bl6{margin-bottom:calc(var(--bl) * 6);}
-header{padding:calc(var(--bl) * 6) 0 calc(var(--bl) * 3);border-bottom:1px solid var(--black);}
+header{padding:calc(var(--bl) * 6) 0 calc(var(--bl) * 3);border-bottom:2px solid var(--red);}
 .logo{font-size:48px;font-weight:700;letter-spacing:-0.03em;line-height:1;color:var(--red);margin-bottom:var(--bl);}
 .tagline{font-size:18px;line-height:var(--lh);color:var(--gray);max-width:48ch;}
 h2{font-size:32px;font-weight:700;line-height:calc(var(--bl) * 5);letter-spacing:-0.02em;margin-bottom:calc(var(--bl) * 2);}
@@ -35,7 +32,7 @@ p{margin-bottom:calc(var(--bl) * 2);}
 .mode-btn:hover{background:var(--black);color:var(--white);}
 .mode-btn.active{background:var(--red);color:var(--white);border-color:var(--red);}
 .drop-zone{border:2px dashed var(--gray);padding:calc(var(--bl) * 6) var(--gutter);text-align:center;cursor:pointer;margin-bottom:calc(var(--bl) * 3);transition:all 0.2s;}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--red);background:rgba(18,138,75,0.06);}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--red);background:rgba(0,163,68,0.08);}
 .drop-zone strong{color:var(--red);}
 .hide{display:none!important;}
 .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gutter);margin-bottom:calc(var(--bl) * 3);}
@@ -49,9 +46,9 @@ input[type=range]{width:100%;height:var(--bl);accent-color:var(--red);}
 .canvas-wrap{position:relative;width:100%;min-height:400px;border:2px solid var(--black);margin-bottom:calc(var(--bl) * 3);display:flex;align-items:center;justify-content:center;background:var(--black);}
 canvas{display:block;max-width:100%;height:auto;}
 video{display:none;}
-.status{display:flex;align-items:center;gap:calc(var(--bl) * 2);margin-bottom:calc(var(--bl) * 2);padding:calc(var(--bl) * 2);border:1px solid var(--black);}
+.status{display:flex;align-items:center;gap:calc(var(--bl) * 2);margin-bottom:calc(var(--bl) * 2);padding:calc(var(--bl) * 2);border:2px solid var(--red);}
 .status-dot{width:calc(var(--bl) * 2);height:calc(var(--bl) * 2);border-radius:50%;background:var(--gray);}
-.status-dot.on{background:var(--red);}
+.status-dot.on{background:var(--green3);box-shadow:0 0 8px var(--green3);}
 .status-dot.busy{background:#F59E0B;animation:pulse 1s infinite;}
 .status-dot.err{background:var(--black);}
 @keyframes pulse{50%{opacity:0.3;}}
@@ -80,18 +77,17 @@ footer{border-top:2px solid var(--black);padding:calc(var(--bl) * 4) 0;margin-to
 </div>
 </div>
 </header>
-<main>
-<div class="container">
-<aside class="grid-3">
-<h4 class="bl2">Input Mode</h4>
+<main class="container" style="padding-top:calc(var(--bl) * 4);">
+<section class="grid-3">
+<h4>Input Mode</h4>
 <div class="modes">
 <button class="mode-btn active" data-mode="image">Image</button>
 <button class="mode-btn" data-mode="video">Video</button>
 <button class="mode-btn" data-mode="webcam">Live Camera</button>
 </div>
-<h4 class="bl2">Model Notes</h4>
+<h4>Model Notes</h4>
 <p class="footer-text">YOLO26s model with two classes: negative and positive.</p>
-</aside>
+</section>
 <section class="grid-6">
 <div id="dropZone" class="drop-zone">
 <p><strong>Click or drag</strong> an MRI scan image here</p>
@@ -103,36 +99,34 @@ footer{border-top:2px solid var(--black);padding:calc(var(--bl) * 4) 0;margin-to
 </div>
 <button id="camBtn" class="btn primary hide">Start Camera</button>
 <button id="stopBtn" class="btn hide">Stop</button>
-<div class="canvas-wrap"><canvas id="canvas" width="640" height="400"></canvas><video id="video" playsinline></video></div>
+<div class="canvas-wrap"><canvas></canvas><video id="video" playsinline></video></div>
 <div class="status"><span id="dot" class="status-dot"></span><span id="statusText">Initializing...</span></div>
 <div id="progressWrap" class="progress hide"><div id="progressBar" class="progress-bar"></div></div>
 </section>
-<aside class="grid-3">
-<div class="stats">
+<section class="grid-3">
+<div class="stats" style="grid-template-columns:1fr;">
 <div class="stat"><div class="stat-v" id="statCount">0</div><div class="stat-k">Detections</div></div>
 <div class="stat"><div class="stat-v" id="statMax">—</div><div class="stat-k">Max Confidence</div></div>
 <div class="stat"><div class="stat-v" id="statTime">—</div><div class="stat-k">Inference (ms)</div></div>
 <div class="stat"><div class="stat-v" id="statFps">—</div><div class="stat-k">FPS (live)</div></div>
 </div>
-<h4 class="bl2">Detections</h4>
+<h4>Detections</h4>
 <div id="detList" class="detlist"></div>
-</aside>
+</section>
 <div class="grid-full">
-<div class="disclaimer"><strong>Research and educational use only.</strong> This application is not a medical device and must never be used for clinical diagnosis or treatment decisions. Always consult qualified healthcare professionals for medical advice.</div>
-</div>
+<p class="disclaimer"><strong>Research and educational use only.</strong> This application is not a medical device and must never be used for clinical diagnosis or treatment decisions. Always consult qualified healthcare professionals for medical advice.</p>
 </div>
 </main>
 <footer>
-<div class="container">
-<div class="grid-full"><p class="footer-text">TumorVision · Developed by Derrick Mirindi · David Sinkhonde · Frederic Mirindi</p></div>
-</div>
+<div class="container"><div class="grid-full"><p class="footer-text">TumorVision · Developed by Derrick Mirindi · David Sinkhonde · Frederic Mirindi</p></div></div>
 </footer>
 <script>
 const $=id=>document.getElementById(id);
 const canvas=$('canvas'),ctx=canvas.getContext('2d'),video=$('video');
 let session=null,mode='image',stream=null,running=false,conf=0.25,iou=0.45,rafId=null,fpsT=performance.now(),frames=0;
-const MODEL={path:'./best.onnx',inputSize:640,classes:['negative','positive'],colors:['#5B6B60','#128A4B']};
-const CACHE_NAME='tumorvision-model-v1',CACHE_KEY='best-onnx';
+const MODEL={path:'./best.pt',inputSize:640,classes:['negative','positive'],colors:['#4A5D51','#00A344']};
+const CACHE_NAME='tumorvision-model-v2',CACHE_KEY='best-pt';
+const LABEL_FONT='"Leelawadee UI","Segoe UI",Arial,sans-serif';
 function setStatus(txt,cls){$('statusText').textContent=txt;$('dot').className='status-dot '+(cls||'');}
 function setProgress(pct){const w=$('progressWrap'),b=$('progressBar');if(pct===null){w.classList.add('hide');}else{w.classList.remove('hide');b.style.width=pct+'%';}}
 async function getCachedModel(){if(!('indexedDB' in window))return null;try{const db=await new Promise((res,rej)=>{const r=indexedDB.open(CACHE_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('models');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});const tx=db.transaction('models','readonly');const store=tx.objectStore('models');const data=await new Promise((res,rej)=>{const r=store.get(CACHE_KEY);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});db.close();return data?data.buffer:null;}catch(e){console.warn('Cache read:',e);return null;}}
@@ -141,9 +135,11 @@ async function downloadModelWithProgress(url){const resp=await fetch(url);if(!re
 async function loadModel(){try{if(typeof ort==='undefined'){setStatus('ORT not loaded','err');return;}ort.env.wasm.numThreads=1;setStatus('Checking cache...','busy');let buffer=await getCachedModel();if(buffer){setStatus('Loading from cache...','busy');}else{setStatus('Downloading model...','busy');setProgress(0);buffer=await downloadModelWithProgress(MODEL.path);setProgress(null);setStatus('Caching model...','busy');await setCachedModel(buffer);}setStatus('Initializing session...','busy');session=await ort.InferenceSession.create(buffer,{executionProviders:['wasm'],graphOptimizationLevel:'all'});setStatus('Ready — upload a scan','on');}catch(e){setStatus('Error: '+e.message,'err');console.error(e);}}
 function drawImageToCanvas(img){canvas.width=img.naturalWidth||img.videoWidth||640;canvas.height=img.naturalHeight||img.videoHeight||360;ctx.drawImage(img,0,0,canvas.width,canvas.height);}
 function preprocess(source,ow,oh){const S=MODEL.inputSize;const r=Math.min(S/ow,S/oh);const nw=Math.round(ow*r),nh=Math.round(oh*r);const dx=(S-nw)/2,dy=(S-nh)/2;const tmp=document.createElement('canvas');tmp.width=S;tmp.height=S;const tc=tmp.getContext('2d');tc.fillStyle='#000';tc.fillRect(0,0,S,S);tc.drawImage(source,dx,dy,nw,nh);const px=tc.getImageData(0,0,S,S).data;const arr=new Float32Array(S*S*3);for(let i=0;i<S*S;i++){arr[i]=px[i*4]/255;arr[i+S*S]=px[i*4+1]/255;arr[i+2*S*S]=px[i*4+2]/255;}return{tensor:new ort.Tensor('float32',arr,[1,3,S,S]),r,dx,dy};}
-function parseBoxes(out,meta,ow,oh){const d=out.data,dims=out.dims;if(!dims||dims.length<2)return[];const nc=MODEL.classes.length;let nBox,nAttr,transposed=false;if(dims.length===3&&dims[0]===1){nAttr=dims[1];nBox=dims[2];}else if(dims.length===2){nAttr=dims[1];nBox=dims[0];transposed=true;}else{nBox=dims[dims.length-1];nAttr=dims[dims.length-2];}const boxes=[];for(let i=0;i<nBox;i++){const get=(row,col)=>transposed?d[col*nAttr+row]:d[row*nBox+col];let bestScore=0,cls=0;for(let c=0;c<nc;c++){const s=get(4+c,i);if(s>bestScore){bestScore=s;cls=c;}}if(bestScore<conf)continue;const cx=get(0,i),cy=get(1,i),bw=get(2,i),bh=get(3,i);const x=(cx-bw/2-meta.dx)/meta.r,y=(cy-bh/2-meta.dy)/meta.r;boxes.push({x:Math.max(0,x),y:Math.max(0,y),w:bw/meta.r,h:bh/meta.r,score:bestScore,cls});}return nms(boxes);}
-function nms(boxes){boxes.sort((a,b)=>b.score-a.score);const keep=[];while(boxes.length){const a=boxes.shift();keep.push(a);boxes=boxes.filter(b=>{const x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y);const x2=Math.min(a.x+a.w,b.x+b.w),y2=Math.min(a.y+a.h,b.y+b.h);const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1);const u=a.w*a.h+b.w*b.h-inter;return u>0?inter/u<iou:true;});}return keep;}
-function drawBoxes(dets,ow,oh){dets.forEach(dt=>{const col=MODEL.colors[dt.cls%MODEL.colors.length];ctx.lineWidth=Math.max(3,ow/200);ctx.strokeStyle=col;ctx.fillStyle=col+'33';ctx.beginPath();ctx.rect(dt.x,dt.y,dt.w,dt.h);ctx.fill();ctx.stroke();const label=MODEL.classes[dt.cls]+' '+(dt.score*100).toFixed(0)+'%';ctx.font='bold '+Math.max(16,ow/40)+'px "Space Grotesk", Arial, sans-serif';const tw=ctx.measureText(label).width;const by=Math.max(0,dt.y-28);ctx.fillStyle=col;ctx.fillRect(dt.x,by,tw+16,28);ctx.fillStyle='#FFF';ctx.fillText(label,dt.x+8,by+20);});}
+function parseBoxes(out,meta,ow,oh){const d=out.data,dims=out.dims;if(!dims||dims.length<2)return[];const nc=MODEL.classes.length;let nBox,nAttr,transposed=false;if(dims.length===3&&dims[0]===1){nAttr=dims[1];nBox=dims[2];}else if(dims.length===2){nAttr=dims[1];nBox=dims[0];transposed=true;}else{nBox=dims[dims.length-1];nAttr=dims[dims.length-2];}const boxes=[];for(let i=0;i<nBox;i++){const get=(row,col)=>transposed?d[col*nAttr+row]:d[row*nBox+col];let bestScore=0,cls=0;for(let c=0;c<nc;c++){const s=get(4+c,i);if(s>bestScore){bestScore=s;cls=c;}}if(bestScore<conf)continue;const cx=get(0,i),cy=get(1,i),bw=get(2,i),bh=get(3,i);const x=(cx-bw/2-meta.dx)/meta.r,y=(cy-bh/2-meta.dy)/meta.r;boxes.push({x:Math.max(0,x),y:Math.max(0,y),w:bw/meta.r,h:bh/meta.r,score:bestScore,cls});}return nmsPerClass(boxes,ow,oh);}
+function iouOf(a,b){const x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y);const x2=Math.min(a.x+a.w,b.x+b.w),y2=Math.min(a.y+a.h,b.y+b.h);const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1);const u=a.w*a.h+b.w*b.h-inter;return u>0?inter/u:0;}
+function nmsClass(boxes){boxes.sort((a,b)=>b.score-a.score);const keep=[];while(boxes.length){const a=boxes.shift();keep.push(a);boxes=boxes.filter(b=>iouOf(a,b)<iou);}return keep;}
+function nmsPerClass(boxes,ow,oh){const minArea=(ow*oh)*0.00015;const byClass={};boxes.forEach(b=>{if(b.w*b.h<minArea)return;(byClass[b.cls]=byClass[b.cls]||[]).push(b);});let out=[];Object.keys(byClass).forEach(c=>{out=out.concat(nmsClass(byClass[c]));});out.sort((a,b)=>b.score-a.score);return out;}
+function drawBoxes(dets,ow,oh){dets.forEach(dt=>{const col=MODEL.colors[dt.cls%MODEL.colors.length];ctx.lineWidth=Math.max(3,ow/200);ctx.strokeStyle=col;ctx.fillStyle=col+'33';ctx.beginPath();ctx.rect(dt.x,dt.y,dt.w,dt.h);ctx.fill();ctx.stroke();const label=MODEL.classes[dt.cls]+' '+(dt.score*100).toFixed(1)+'%';ctx.font='bold '+Math.max(16,ow/40)+'px '+LABEL_FONT;const tw=ctx.measureText(label).width;const by=Math.max(0,dt.y-28);ctx.fillStyle=col;ctx.fillRect(dt.x,by,tw+16,28);ctx.fillStyle='#FFF';ctx.fillText(label,dt.x+8,by+20);});}
 function updateStats(dets,ms){$('statCount').textContent=dets.length;$('statMax').textContent=dets.length?(Math.max(...dets.map(d=>d.score))*100).toFixed(1)+'%':'—';$('statTime').textContent=ms.toFixed(0);const list=$('detList');list.innerHTML='';dets.forEach((d,i)=>{const row=document.createElement('div');row.className='det-row';row.innerHTML='<span>#'+(i+1)+' · '+MODEL.classes[d.cls]+'</span><span class="det-badge">'+(d.score*100).toFixed(1)+'%</span>';list.appendChild(row);});}
 async function runInference(source,ow,oh){if(!session)return[];const meta=preprocess(source,ow,oh);const t0=performance.now();const out=await session.run({[session.inputNames[0]]:meta.tensor});const ms=performance.now()-t0;const primary=out[session.outputNames[0]];const dets=parseBoxes(primary,meta,ow,oh);drawBoxes(dets,ow,oh);updateStats(dets,ms);return dets;}
 function handleImage(file){const img=new Image();img.onload=async()=>{drawImageToCanvas(img);setStatus('Analyzing...','busy');try{await runInference(img,img.naturalWidth,img.naturalHeight);setStatus('Done','on');}catch(e){setStatus('Error: '+e.message,'err');}};img.src=URL.createObjectURL(file);}
