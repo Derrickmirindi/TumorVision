@@ -1,11 +1,11 @@
 <img width="512" height="512" alt="1815" src="https://github.com/user-attachments/assets/b8b86d07-e01f-480c-a5ef-761297285a4a" />
-# NeuroScan — Brain Tumor Detection
+# TumorVision — Brain Tumor Scanner & MRI Imagery Analysis
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://derrickmirindi.github.io/AI-Brain-Tumor/)
 [![GitHub Pages](https://img.shields.io/badge/deployed-GitHub%20Pages-blue)](https://derrickmirindi.github.io/AI-Brain-Tumor/)
 [![ONNX](https://img.shields.io/badge/model-ONNX-orange)](https://onnx.ai/)
 
-Real-time brain tumor detection using YOLO11s segmentation, running entirely in your browser via ONNX Runtime Web.
+Real-time brain tumor detection using YOLO26s, running entirely in your browser via ONNX Runtime Web.
 
 ## 🚀 Live Demo
 
@@ -30,7 +30,7 @@ Real-time brain tumor detection using YOLO11s segmentation, running entirely in 
 
 ### Technical Stack
 
-- **Model**: YOLO11s segmentation trained on brain tumor MRI dataset
+- **Model**: YOLO26s segmentation trained on brain tumor MRI dataset
 - **Format**: ONNX (Open Neural Network Exchange)
 - **Runtime**: ONNX Runtime Web (WebAssembly)
 - **Frontend**: Vanilla HTML/CSS/JavaScript (no frameworks)
@@ -63,7 +63,7 @@ npx serve
 ```
 .
 ├── index.html      # Single-page app with embedded CSS/JS
-├── best.onnx       # YOLO11s tumor detection model
+├── best.onnx       # YOLO26s tumor detection model
 └── README.md       # This file
 ```
 
