@@ -68,3 +68,97 @@ footer{border-top:2px solid var(--black);padding:calc(var(--bl) * 4) 0;margin-to
 @media(max-width:900px){:root{--cols:6;--margin:24px;--gutter:16px;}.grid-8,.grid-4,.grid-3,.grid-6{grid-column:1 / -1;}.stats{grid-template-columns:repeat(2,1fr);}.controls{grid-template-columns:1fr;}}
 </style>
 </head>
+<body>
+<header>
+<div class="container">
+<div class="grid-full">
+<h1 class="logo">TumorVision</h1>
+<p class="tagline">Brain Tumor Scanner — real-time MRI imagery analysis using YOLO26s segmentation. Developed by Derrick Mirindi, David Sinkhonde and Frederic Mirindi.</p>
+</div>
+</div>
+</header>
+<main class="container" style="padding-top:calc(var(--bl) * 4);">
+<section class="grid-3">
+<h4>Input Mode</h4>
+<div class="modes">
+<button class="mode-btn active" data-mode="image">Image</button>
+<button class="mode-btn" data-mode="video">Video</button>
+<button class="mode-btn" data-mode="webcam">Live Camera</button>
+</div>
+<h4>Model Notes</h4>
+<p class="footer-text">YOLO26s model with two classes: negative and positive.</p>
+</section>
+<section class="grid-6">
+<div id="dropZone" class="drop-zone">
+<p><strong>Click or drag</strong> an MRI scan image here</p>
+</div>
+<input id="fileInput" type="file" class="hide" accept="image/*">
+<div class="controls">
+<div class="control"><label>Confidence: <span id="confVal">0.25</span></label><input id="confSlider" type="range" min="0.05" max="0.95" step="0.05" value="0.25"></div>
+<div class="control"><label>IoU (NMS): <span id="iouVal">0.45</span></label><input id="iouSlider" type="range" min="0.1" max="0.9" step="0.05" value="0.45"></div>
+</div>
+<button id="camBtn" class="btn primary hide">Start Camera</button>
+<button id="stopBtn" class="btn hide">Stop</button>
+<div class="canvas-wrap"><canvas></canvas><video id="video" playsinline></video></div>
+<div class="status"><span id="dot" class="status-dot"></span><span id="statusText">Initializing...</span></div>
+<div id="progressWrap" class="progress hide"><div id="progressBar" class="progress-bar"></div></div>
+</section>
+<section class="grid-3">
+<div class="stats" style="grid-template-columns:1fr;">
+<div class="stat"><div class="stat-v" id="statCount">0</div><div class="stat-k">Detections</div></div>
+<div class="stat"><div class="stat-v" id="statMax">—</div><div class="stat-k">Max Confidence</div></div>
+<div class="stat"><div class="stat-v" id="statTime">—</div><div class="stat-k">Inference (ms)</div></div>
+<div class="stat"><div class="stat-v" id="statFps">—</div><div class="stat-k">FPS (live)</div></div>
+</div>
+<h4>Detections</h4>
+<div id="detList" class="detlist"></div>
+</section>
+<div class="grid-full">
+<p class="disclaimer"><strong>Research and educational use only.</strong> This application is not a medical device and must never be used for clinical diagnosis or treatment decisions. Always consult qualified healthcare professionals for medical advice.</p>
+</div>
+</main>
+<footer>
+<div class="container"><div class="grid-full"><p class="footer-text">TumorVision · Developed by Derrick Mirindi · David Sinkhonde · Frederic Mirindi</p></div></div>
+</footer>
+<script>
+const $=id=>document.getElementById(id);
+const canvas=$('canvas'),ctx=canvas.getContext('2d'),video=$('video');
+let session=null,mode='image',stream=null,running=false,conf=0.25,iou=0.45,rafId=null,fpsT=performance.now(),frames=0;
+const MODEL={path:'./best.pt',inputSize:640,classes:['negative','positive'],colors:['#4A5D51','#00A344']};
+const CACHE_NAME='tumorvision-model-v3',CACHE_KEY='best-pt';
+const LABEL_FONT='"Leelawadee UI","Segoe UI",Arial,sans-serif';
+function setStatus(txt,cls){$('statusText').textContent=txt;$('dot').className='status-dot '+(cls||'');}
+function setProgress(pct){const w=$('progressWrap'),b=$('progressBar');if(pct===null){w.classList.add('hide');}else{w.classList.remove('hide');b.style.width=pct+'%';}}
+async function getCachedModel(){if(!('indexedDB' in window))return null;try{const db=await new Promise((res,rej)=>{const r=indexedDB.open(CACHE_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('models');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});const tx=db.transaction('models','readonly');const store=tx.objectStore('models');const data=await new Promise((res,rej)=>{const r=store.get(CACHE_KEY);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});db.close();return data?data.buffer:null;}catch(e){console.warn('Cache read:',e);return null;}}
+async function setCachedModel(buffer){if(!('indexedDB' in window))return;try{const db=await new Promise((res,rej)=>{const r=indexedDB.open(CACHE_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('models');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});const tx=db.transaction('models','readwrite');const store=tx.objectStore('models');store.put({buffer},CACHE_KEY);await new Promise((res,rej)=>{tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});db.close();}catch(e){console.warn('Cache write:',e);}}
+async function downloadModelWithProgress(url){const resp=await fetch(url);if(!resp.ok)throw new Error('Download failed');const total=+resp.headers.get('content-length')||0;const reader=resp.body.getReader();let received=0;const chunks=[];while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);received+=value.length;if(total>0)setProgress(Math.round(received/total*100));}const blob=new Blob(chunks);return await blob.arrayBuffer();}
+async function loadModel(){try{if(typeof ort==='undefined'){setStatus('ORT not loaded','err');return;}ort.env.wasm.numThreads=1;setStatus('Checking cache...','busy');let buffer=await getCachedModel();if(buffer){setStatus('Loading from cache...','busy');}else{setStatus('Downloading model...','busy');setProgress(0);buffer=await downloadModelWithProgress(MODEL.path);setProgress(null);setStatus('Caching model...','busy');await setCachedModel(buffer);}setStatus('Initializing session...','busy');session=await ort.InferenceSession.create(buffer,{executionProviders:['wasm'],graphOptimizationLevel:'all'});setStatus('Ready — upload a scan','on');}catch(e){setStatus('Error: '+e.message,'err');console.error(e);}}
+function drawImageToCanvas(img){canvas.width=img.naturalWidth||img.videoWidth||640;canvas.height=img.naturalHeight||img.videoHeight||360;ctx.drawImage(img,0,0,canvas.width,canvas.height);}
+function preprocess(source,ow,oh){const S=MODEL.inputSize;const r=Math.min(S/ow,S/oh);const nw=Math.round(ow*r),nh=Math.round(oh*r);const dx=(S-nw)/2,dy=(S-nh)/2;const tmp=document.createElement('canvas');tmp.width=S;tmp.height=S;const tc=tmp.getContext('2d');tc.fillStyle='#000';tc.fillRect(0,0,S,S);tc.drawImage(source,dx,dy,nw,nh);const px=tc.getImageData(0,0,S,S).data;const arr=new Float32Array(S*S*3);for(let i=0;i<S*S;i++){arr[i]=px[i*4]/255;arr[i+S*S]=px[i*4+1]/255;arr[i+2*S*S]=px[i*4+2]/255;}return{tensor:new ort.Tensor('float32',arr,[1,3,S,S]),r,dx,dy};}
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function parseBoxes(out,meta,ow,oh){const d=out.data,dims=out.dims;if(!dims||dims.length<2)return[];const nc=MODEL.classes.length;const expAttr=4+nc;let a=dims[dims.length-2],b=dims[dims.length-1];let nAttr,nBox,attrMajor;if(a===expAttr){nAttr=a;nBox=b;attrMajor=true;}else if(b===expAttr){nAttr=b;nBox=a;attrMajor=false;}else if(a<b){nAttr=a;nBox=b;attrMajor=true;}else{nAttr=b;nBox=a;attrMajor=false;}const get=(attr,box)=>attrMajor?d[attr*nBox+box]:d[box*nAttr+attr];let maxScore=0;for(let i=0;i<nBox;i++){for(let c=0;c<nc;c++){const s=get(4+c,i);if(s>maxScore)maxScore=s;}}const needSig=maxScore>1.0;const norm=v=>{let s=needSig?sigmoid(v):v;return s<0?0:s>1?1:s;};let maxCoord=0;for(let i=0;i<Math.min(nBox,50);i++){const v=get(0,i);if(v>maxCoord)maxCoord=v;}const coordScale=maxCoord<=1.5?MODEL.inputSize:1;const boxes=[];for(let i=0;i<nBox;i++){let bestScore=0,cls=0;for(let c=0;c<nc;c++){const s=norm(get(4+c,i));if(s>bestScore){bestScore=s;cls=c;}}if(bestScore<conf)continue;const cx=get(0,i)*coordScale,cy=get(1,i)*coordScale,bw=get(2,i)*coordScale,bh=get(3,i)*coordScale;const x=(cx-bw/2-meta.dx)/meta.r,y=(cy-bh/2-meta.dy)/meta.r;boxes.push({x:Math.max(0,x),y:Math.max(0,y),w:bw/meta.r,h:bh/meta.r,score:bestScore,cls});}return nmsPerClass(boxes,ow,oh);}
+function iouOf(a,b){const x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y);const x2=Math.min(a.x+a.w,b.x+b.w),y2=Math.min(a.y+a.h,b.y+b.h);const inter=Math.max(0,x2-x1)*Math.max(0,y2-y1);const u=a.w*a.h+b.w*b.h-inter;return u>0?inter/u:0;}
+function nmsClass(boxes){boxes.sort((a,b)=>b.score-a.score);const keep=[];while(boxes.length){const a=boxes.shift();keep.push(a);boxes=boxes.filter(b=>iouOf(a,b)<iou);}return keep;}
+function nmsPerClass(boxes,ow,oh){const minArea=(ow*oh)*0.00008;const byClass={};boxes.forEach(b=>{if(b.w*b.h<minArea)return;if(b.w>ow*1.2||b.h>oh*1.2)return;(byClass[b.cls]=byClass[b.cls]||[]).push(b);});let out=[];Object.keys(byClass).forEach(c=>{out=out.concat(nmsClass(byClass[c]));});out.sort((a,b)=>b.score-a.score);return out;}
+function drawBoxes(dets,ow,oh){dets.forEach(dt=>{const col=MODEL.colors[dt.cls%MODEL.colors.length];ctx.lineWidth=Math.max(3,ow/200);ctx.strokeStyle=col;ctx.fillStyle=col+'33';ctx.beginPath();ctx.rect(dt.x,dt.y,dt.w,dt.h);ctx.fill();ctx.stroke();const label=MODEL.classes[dt.cls]+' '+(dt.score*100).toFixed(1)+'%';ctx.font='bold '+Math.max(16,ow/40)+'px '+LABEL_FONT;const tw=ctx.measureText(label).width;const by=Math.max(0,dt.y-28);ctx.fillStyle=col;ctx.fillRect(dt.x,by,tw+16,28);ctx.fillStyle='#FFF';ctx.fillText(label,dt.x+8,by+20);});}
+function updateStats(dets,ms){$('statCount').textContent=dets.length;$('statMax').textContent=dets.length?(Math.max(...dets.map(d=>d.score))*100).toFixed(1)+'%':'—';$('statTime').textContent=ms.toFixed(0);const list=$('detList');list.innerHTML='';dets.forEach((d,i)=>{const row=document.createElement('div');row.className='det-row';row.innerHTML='<span>#'+(i+1)+' · '+MODEL.classes[d.cls]+'</span><span class="det-badge">'+(d.score*100).toFixed(1)+'%</span>';list.appendChild(row);});}
+async function runInference(source,ow,oh){if(!session)return[];const meta=preprocess(source,ow,oh);const t0=performance.now();const out=await session.run({[session.inputNames[0]]:meta.tensor});const ms=performance.now()-t0;const primary=out[session.outputNames[0]];const dets=parseBoxes(primary,meta,ow,oh);drawBoxes(dets,ow,oh);updateStats(dets,ms);return dets;}
+function handleImage(file){const img=new Image();img.onload=async()=>{drawImageToCanvas(img);setStatus('Analyzing...','busy');try{await runInference(img,img.naturalWidth,img.naturalHeight);setStatus('Done','on');}catch(e){setStatus('Error: '+e.message,'err');}};img.src=URL.createObjectURL(file);}
+function handleVideo(file){stopAll();video.src=URL.createObjectURL(file);video.onloadeddata=()=>{video.play();running=true;setStatus('Running...','on');loopVideo();};}
+async function loopVideo(){if(!running||video.paused||video.ended){setStatus('Done','on');return;}drawImageToCanvas(video);try{await runInference(video,video.videoWidth,video.videoHeight);tickFps();}catch(e){}rafId=requestAnimationFrame(loopVideo);}
+async function startCam(){try{stopAll();stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});video.srcObject=stream;await video.play();running=true;$('camBtn').classList.add('hide');$('stopBtn').classList.remove('hide');setStatus('Live','on');loopCam();}catch(e){setStatus('Camera: '+e.message,'err');}}
+async function loopCam(){if(!running)return;drawImageToCanvas(video);try{await runInference(video,video.videoWidth,video.videoHeight);tickFps();}catch(e){}rafId=requestAnimationFrame(loopCam);}
+function stopAll(){running=false;if(rafId){cancelAnimationFrame(rafId);rafId=null;}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}video.srcObject=null;video.src='';$('camBtn').classList.remove('hide');$('stopBtn').classList.add('hide');$('statFps').textContent='—';}
+function tickFps(){frames++;const now=performance.now();if(now-fpsT>=1000){$('statFps').textContent=frames;frames=0;fpsT=now;}}
+document.querySelectorAll('.mode-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');stopAll();mode=btn.dataset.mode;const dz=$('dropZone'),fi=$('fileInput');if(mode==='webcam'){dz.classList.add('hide');$('camBtn').classList.remove('hide');}else{dz.classList.remove('hide');$('camBtn').classList.add('hide');fi.accept=mode==='image'?'image/*':'video/*';dz.querySelector('p').innerHTML='<strong>Click or drag</strong> a '+(mode==='image'?'scan image':'video')+' here';}if(session)setStatus('Ready','on');});});
+$('dropZone').addEventListener('click',()=>$('fileInput').click());
+$('fileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;if(mode==='image')handleImage(f);else handleVideo(f);e.target.value='';});
+['dragover','dragleave','drop'].forEach(ev=>{$('dropZone').addEventListener(ev,e=>{e.preventDefault();$('dropZone').classList.toggle('drag',ev==='dragover');if(ev==='drop'){const f=e.dataTransfer.files[0];if(!f)return;if(mode==='image')handleImage(f);else handleVideo(f);}});});
+$('camBtn').addEventListener('click',startCam);
+$('stopBtn').addEventListener('click',()=>{stopAll();setStatus('Stopped','on');});
+$('confSlider').addEventListener('input',e=>{conf=+e.target.value;$('confVal').textContent=conf.toFixed(2);});
+$('iouSlider').addEventListener('input',e=>{iou=+e.target.value;$('iouVal').textContent=iou.toFixed(2);});
+window.addEventListener('load',loadModel);
+</script>
+</body>
+</html>
